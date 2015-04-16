@@ -1,0 +1,260 @@
+<!doctype html public "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta name="language" content="en">
+  <meta name="author" content="January June / Yotogi-Hime / Beliefia Productions">
+  <meta name="date" content="2001-10-31T06:24:15+09:00">
+  <link rev="made" href="mailto:jjsuwa@sys3175.com">
+  <title>DosMapPhysMem() dynalink library Reference</title>
+ </head>
+
+ <body>
+
+  <h1>DosMapPhysMem() dynalink library, public release 1.0.1</h1>
+  <strong>Copyright 2001 Takayuki 'January June' Suwa / Beliefia Productions.</strong><br>
+  <hr>
+
+  <hr>
+
+  <h1>0. <a name="0">Table of Contents</a></h1>
+  <ul>
+   <li>0. <a href="#0">Table of Contents</a></li>
+   <li>1. <a href="#1">Welcome</a>
+       <ul>
+        <li>1.1. <a href="#1.1">Copyright and Disclaimer</a></li>
+        <li>1.2. <a href="#1.2">System Requirements</a></li>
+        <li>1.3. <a href="#1.3">Contact Author</a></li>
+        <li>1.4. <a href="#1.4">Revision History</a></li>
+       </ul></li>
+   <li>2. <a href="#2">Reference</a>
+       <ul>
+        <li>2.1. <a href="#2.1"><tt>DosMapPhysMem()</tt></a></li>
+        <li>2.2. <a href="#2.2"><tt>DosMapSharedPhysMem()</tt></a></li>
+        <li>2.3. <a href="#2.3"><tt>DosUnmapPhysMem()</tt></a></li>
+       </ul></li>
+  </ul>
+  <hr>
+
+  <hr>
+
+  
+  <h1>1. <a name="1">Welcome</a></h1>
+  This software is a dynalink library that maps specified physical memory region to 32bit process address space and unmaps it.<br>
+  Before, all OS/2 32bit processes can access physical memory only via tightly-limited way such as DIVE / GRADD video framebuffer.<br>
+  This DLL internally issues mighty <tt>DevHlp_VMAlloc()</tt> to realize such memory mapping via common device driver SCREEN0x.SYS, thus, now you can access to any position of physical memory freely.<br>
+  <br>
+  It can be used any 32bit development suites that can issue OS/2 APIs such as emx/gcc, VisualAge C/C++ or Watcom C/C++.<br>
+  Free to use, under the GNU LGPL.
+  <hr>
+
+  <h2>1.1. <a name="1.1">Copyright and Disclaimer</a></h2>
+  <ol>
+   <li>'THIS SOFTWARE AND WHOLE SET OF DOCUMENTS' (CALLED 'THE PACKAGE') ARE ENTIRELY COPYRIGHTED BY TAKAYUKI 'JANUARY JUNE' SUWA / BELIEFIA PRODUCTIONS, AUTHOR / HOLDER OF THE PRODUCT.</li>
+   <li>THIS PACKAGE IS DISTRIBUTED UNDER THE &quot;GNU LESSER PUBLIC LICENSE&quot; (LGPL). IT CLAIMS:
+       <ul>
+        <li>YOU CAN USE OR INCLUDE A COMPILED VERSION OF THIS SOFTWARE (MAPHYMEM.DLL) WITH OTHER SOFTWARES.</LI>
+        <li>YOU CANNOT INCLUDE ANY SOURCE CODE FROM THIS SOFTWARE, WITH THE EXCEPTION OF FILES WHOSE ONLY PURPOSE IS TO DESCRIBE THE LIBRARY INTERFACE (SUCH AS MAPHYMEM.H).</li>
+        <li>ANY MODIFICATIONS OF THIS SOFTWARE MUST BE RELEASED UNDER THE LGPL.</li>
+        <li>YOU MUST GIVE PROMINENT NOTICE THAT YOUR PROGRAM IS:
+            <ol>
+             <li>USING THIS SOFTWARE (INCLUDING VERSION/REVISION NUMBER).</li>
+             <li>THIS SOFTWARE IS UNDER THE LGPL.</li>
+             <li>PROVIDE A COPY OF THE LGPL. (THE FILE COPYING CONTAINS THE LGPL)</li>
+             <li>PRIVIDE A COPY OF SOURCE OF THIS SOFTWARE, OR POINTER WHERE THE SOURCE CAN BE OBTAINED (SUCH AS ANONYMOUS FTP ARCHIVE URI).</li>
+            </ol></li>
+       </ul>
+       SEE &quot;COPYING&quot; FOR DETAIL.</li>
+   <li>THE PACKAGE IS PROVIDED 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.</li>
+   <li>IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY DAMAGES, WHETHER IN CONTRACT OR TORT (INCLUDED NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE PRODUCT, EVEN THOUGH SUCH HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF ANY DAMAGE.</li>
+  </ol>
+  <hr>
+
+  <h2>1.2. <a name="1.2">System Requirements</a></h2>
+  This program will be functioned in environment such as:<br>
+  <ul>
+   <li>OS/2 version 3 or later (Warp v3 / WarpServer v4 / Warp v4 / WSeB / MCP / ACP / eCS, uniprocessor or multiprocessor)</li>
+   <li>Base screen device driver (SCREEN0x.SYS) is described in CONFIG.SYS and installed</li>
+  </ul>
+  <hr>
+
+  <h2>1.3. <a name="1.3">Contact Author</a></h2>
+  Email to Takayuki 'January June' Suwa:
+  <ul>
+   <li><a href="mailto:jjsuwa@sys3175.com">mailto:jjsuwa@sys3175.com</a></li>
+  </ul>
+  <hr>
+
+  <h2>1.4. <a name="1.4">Revision History</a></h2>
+  <ul>
+   <li><strong>public release 1.0.0 (build 1)</strong> - May 24th,2001
+       <ol>
+        <li>First public release, as a side-borne product of direct video frame buffer manipulation experiment <tt>:)</tt><br>
+            Distributed under the LGPL.</li>
+       </ol></li>
+   <li><strong>public release 1.0.1 (build 2)</strong> - October 31st,2001
+       <ol>
+        <li>Removed a restriction that cannot map physical address of 0.</li>
+       </ol></li>
+  </ul>
+  <hr>
+
+  <hr>
+
+  <h1>2. <a name="2">Reference</a></h1>
+  <hr>
+
+  <h2>2.1. <a name="2.1"><tt>DosMapPhysMem()</tt></a></h2>
+  <table><tbody>
+   <tr>
+    <td valign="top"><strong>Syntax</strong></td>
+    <td>Maps specified physical memory region to 32bit process private address space.
+        <table border="1"><tbody><tr><td>
+<pre>#define INCL_BASE
+#include &lt;os2.h&gt;
+#include &quot;MAPHYMEM.h&quot;
+&nbsp;
+APIRET ulrc = DosMapPhysMem(PPVOID ppb,
+                            ULONG cb,
+                            ULONG ulPhysAddr);</pre>
+        </td></tr></tbody></table></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Parameters</strong></td>
+    <td><dl>
+         <dt><tt>ppb</tt> <tt>(PPVOID)</tt> - output</dt>
+          <dd>Pointer to variable that, pointer to mapped memory region will be set to.</dd>
+         <dt><tt>cb</tt> <tt>(ULONG)</tt> - input</dt>
+          <dd>Size of memory region to map, in bytes.</dd>
+         <dt><tt>ulPhysAddr</tt> <tt>(ULONG)</tt> - input</dt>
+          <dd>Physical memory address to be mapped.</dd>
+        </dl></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Returns</strong></td>
+    <td><dl>
+         <dt><tt>ulrc</tt> <tt>(APIRET)</tt> - return</dt>
+          <dd>Return codes.
+              <dl>
+               <dt><tt>ERROR_INVALID_FUNCTION</tt></dt>
+                <dd>Not supported.</dd>
+               <dt><tt>ERROR_INVALID_PARAMETER</tt></dt>
+                <dd>One or more paramaters are invalid.</dd>
+               <dt><tt>NO_ERROR</tt></dt>
+                <dd>Successful completion.</dd>
+              </dl></dd>
+        </dl></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Remarks</strong></td>
+    <td><p>This function maps specified physical memory region to 32bit process <strong>private</strong> address space. If successful, returned pointer (<tt>*ppb</tt>) points valid process linear address as &quot;peeping window&quot; to physical memory region, and its memory pages are all readable, writeable, committed and of course allocated to physical entity.</p>
+        <p>All mappings are page-basis, thus <tt>ulPhysAddr</tt> is aligned to 4kB boundary and <tt>cb</tt> is rounded up to next 4kB granule.</p>
+        <p>Be with great care when writing to any physical memory region. It can destroy system structures easily and may cause kernel-level crashes.</p></td>
+   </tr>
+  </tbody></table>
+  <hr>
+
+  <h2>2.2. <a name="2.2"><tt>DosMapSharedPhysMem()</tt></a></h2>
+  <table><tbody>
+   <tr>
+    <td valign="top"><strong>Syntax</strong></td>
+    <td>Maps specified physical memory region to 32bit process shared address space.
+        <table border="1"><tbody><tr><td>
+<pre>#define INCL_BASE
+#include &lt;os2.h&gt;
+#include &quot;MAPHYMEM.h&quot;
+&nbsp;
+APIRET ulrc = DosMapSharedPhysMem(PPVOID ppb,
+                                  ULONG cb,
+                                  ULONG ulPhysAddr);</pre>
+        </td></tr></tbody></table></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Parameters</strong></td>
+    <td><dl>
+         <dt><tt>ppb</tt> <tt>(PPVOID)</tt> - output</dt>
+          <dd>Pointer to variable that, pointer to mapped memory region will be set to.</dd>
+         <dt><tt>cb</tt> <tt>(ULONG)</tt> - input</dt>
+          <dd>Size of memory region to map, in bytes.</dd>
+         <dt><tt>ulPhysAddr</tt> <tt>(ULONG)</tt> - input</dt>
+          <dd>Physical memory address to be mapped.</dd>
+        </dl></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Returns</strong></td>
+    <td><dl>
+         <dt><tt>ulrc</tt> <tt>(APIRET)</tt> - return</dt>
+          <dd>Return codes.
+              <dl>
+               <dt><tt>ERROR_INVALID_FUNCTION</tt></dt>
+                <dd>Not supported.</dd>
+               <dt><tt>ERROR_INVALID_PARAMETER</tt></dt>
+                <dd>One or more paramaters are invalid.</dd>
+               <dt><tt>NO_ERROR</tt></dt>
+                <dd>Successful completion.</dd>
+              </dl></dd>
+        </dl></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Remarks</strong></td>
+    <td><p>This function maps specified physical memory region to 32bit process <strong>shared</strong> address space. See <a href="#2.1"><tt>DosMapPhysMem()</tt></a> also.</p></td>
+   </tr>
+  </tbody></table>
+  <hr>
+
+  <h2>2.3. <a name="2.3"><tt>DosUnmapPhysMem()</tt></a></h2>
+  <table><tbody>
+   <tr>
+    <td valign="top"><strong>Syntax</strong></td>
+    <td>Unmaps physical memory region mapped by <tt>DosMap*PhysMem()</tt> from 32bit process address space.
+        <table border="1"><tbody><tr><td>
+<pre>#define INCL_BASE
+#include &lt;os2.h&gt;
+#include &quot;MAPHYMEM.h&quot;
+&nbsp;
+APIRET ulrc = DosUnmapPhysMem(PVOID pb);</pre>
+        </td></tr></tbody></table></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Parameters</strong></td>
+    <td><dl>
+         <dt><tt>pb</tt> <tt>(PVOID)</tt> - input</dt>
+          <dd>Pointer to mapped memory region to be unmapped.</dd>
+        </dl></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Returns</strong></td>
+    <td><dl>
+         <dt><tt>ulrc</tt> <tt>(APIRET)</tt> - return</dt>
+          <dd>Return codes.
+              <dl>
+               <dt><tt>ERROR_INVALID_FUNCTION</tt></dt>
+                <dd>Not supported.</dd>
+               <dt><tt>ERROR_INVALID_PARAMETER</tt></dt>
+                <dd>One or more paramaters are invalid.</dd>
+               <dt><tt>NO_ERROR</tt></dt>
+                <dd>Successful completion.</dd>
+              </dl></dd>
+        </dl></td>
+   </tr>
+   <tr>
+    <td valign="top"><strong>Remarks</strong></td>
+    <td><p>This function unmaps physical memory region mapped by <a href="#2.1"><tt>DosMapPhysMem()</tt></a> or <a href="#2.2"><tt>DosMapSharedPhysMem()</tt></a> from 32bit process address space.</p>
+        <p>Do not unmap any memory regions not mapped by <a href="#2.1"><tt>DosMapPhysMem()</tt></a> or <a href="#2.2"><tt>DosMapSharedPhysMem()</tt></a>. Such attempts may bring unpredictable results including kernel-level crashes.</p></td>
+   </tr>
+  </tbody></table>
+  <hr>
+
+  <hr>
+
+  Copyright 2001 Takayuki 'January June' Suwa / Beliefia Productions. All rights reserved.<br>
+  Beliefia Productions and its logo design are trademarks of Beliefia Productions. All rights reserved.<br>
+  Other copyrighted works (images, musics, programs, and so on), trademarks and servicemarks in this document are owned by their respective owners.<br>
+  <br>
+  [This document is HTML3.2(Wilbur)-compliant.]
+
+ </body>
+
+</html>
